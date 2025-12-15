@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Швейцария Парк | Вопросы жильцов</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+    <!-- Firebase SDK (СТАБИЛЬНАЯ ВЕРСИЯ) -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -667,6 +667,23 @@
     </footer>
 
     <script>
+        // =================== ПРОВЕРКА ЗАГРУЗКИ FIREBASE ===================
+        console.log("Проверяем загрузку Firebase...");
+        console.log("firebase доступен?", typeof firebase !== 'undefined');
+        
+        if (typeof firebase === 'undefined') {
+            document.getElementById('questionsList').innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <p>Ошибка загрузки Firebase SDK</p>
+                    <p style="font-size: 0.9rem; margin-top: 1rem;">
+                        Библиотека Firebase не загрузилась. Обновите страницу.
+                    </p>
+                </div>
+            `;
+            throw new Error("Firebase не загружен");
+        }
+
         // =================== НАСТРОЙКИ FIREBASE ===================
         const firebaseConfig = {
             apiKey: "AIzaSyD3zj_97Lk1q8gStvNVrefqr066s4d92Es",
@@ -679,8 +696,16 @@
         };
 
         // Инициализация Firebase
-        firebase.initializeApp(firebaseConfig);
+        try {
+            firebase.initializeApp(firebaseConfig);
+            console.log("Firebase успешно инициализирован");
+        } catch (error) {
+            console.error("Ошибка инициализации Firebase:", error);
+        }
+        
+        // Получаем доступ к Firestore
         const db = firebase.firestore();
+        console.log("Firestore доступен?", db ? "Да" : "Нет");
         
         // Коллекции Firestore
         const questionsRef = db.collection("questions");
@@ -689,7 +714,6 @@
         // Глобальные переменные
         let questions = [];
         let answers = [];
-        let isInitialized = false;
 
         // =================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ===================
 
@@ -833,7 +857,6 @@
                 renderAnswers();
                 updateQuestionSelect();
                 
-                isInitialized = true;
                 return true;
                 
             } catch (error) {
