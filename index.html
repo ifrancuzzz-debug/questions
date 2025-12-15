@@ -607,11 +607,9 @@
     </footer>
 
     <script>
-        // Хранилище данных (в реальном приложении здесь был бы backend)
+        // Хранилище данных
         let questions = JSON.parse(localStorage.getItem('shveitsaria_questions')) || [];
         let answers = JSON.parse(localStorage.getItem('shveitsaria_answers')) || [];
-        
-  
         
         // Сохранение данных в localStorage
         function saveData() {
@@ -890,7 +888,6 @@
         
         // Инициализация приложения
         function initApp() {
-            initDemoData();
             updateStats();
             renderQuestions();
             renderAnswers();
