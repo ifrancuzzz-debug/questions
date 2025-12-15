@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Швейцария Парк | Вопросы жильцов</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js"></script>
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -374,6 +377,28 @@
             color: #ddd;
         }
         
+        /* Индикатор загрузки */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+        
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--secondary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
         footer {
             background: linear-gradient(135deg, var(--dark-green), var(--secondary-color));
             color: white;
@@ -448,6 +473,9 @@
                 <h1>Швейцария Парк</h1>
             </div>
             <p class="subtitle">Платформа для вопросов и ответов жильцов</p>
+            <p style="font-size: 0.9rem; margin-top: 0.5rem; opacity: 0.8;">
+                <i class="fas fa-cloud"></i> Все данные хранятся в облаке и доступны с любых устройств
+            </p>
         </div>
     </header>
 
@@ -482,7 +510,7 @@
                 </div>
                 <div class="form-group">
                     <label for="questionText">Ваш вопрос:</label>
-                    <textarea id="questionText" placeholder="Например: Когда будут включить отопление? Как получить ключ от подвала?" required></textarea>
+                    <textarea id="questionText" placeholder="Например: Когда включат отопление? Как получить ключ от подвала?" required></textarea>
                 </div>
                 <div class="form-group">
                     <label for="questionCategory">Категория:</label>
@@ -495,7 +523,7 @@
                         <option value="other">Другое</option>
                     </select>
                 </div>
-                <button type="submit" class="btn btn-primary">
+                <button type="submit" class="btn btn-primary" id="submitQuestionBtn">
                     <i class="fas fa-paper-plane"></i> Задать вопрос
                 </button>
             </form>
@@ -520,10 +548,9 @@
                 </div>
                 <div class="panel-body">
                     <div class="items-list" id="questionsList">
-                        <!-- Вопросы будут добавлены с помощью JavaScript -->
-                        <div class="empty-state">
-                            <i class="fas fa-question-circle"></i>
-                            <p>Пока нет вопросов. Будьте первым!</p>
+                        <div class="loading">
+                            <div class="loading-spinner"></div>
+                            <p>Загрузка вопросов...</p>
                         </div>
                     </div>
                 </div>
@@ -539,7 +566,6 @@
                 </div>
                 <div class="panel-body">
                     <div class="items-list" id="answersList">
-                        <!-- Ответы будут добавлены с помощью JavaScript -->
                         <div class="empty-state">
                             <i class="fas fa-comments"></i>
                             <p>Ответов пока нет. Ответьте на любой вопрос!</p>
@@ -566,7 +592,7 @@
                 <div class="form-group">
                     <label for="selectedQuestion">Вопрос:</label>
                     <select id="selectedQuestion">
-                        <!-- Опции будут добавлены JavaScript -->
+                        <option value="">Загрузка вопросов...</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -581,7 +607,7 @@
                         <option value="expert">Специалист</option>
                     </select>
                 </div>
-                <button type="submit" class="btn btn-primary">
+                <button type="submit" class="btn btn-primary" id="submitAnswerBtn">
                     <i class="fas fa-reply"></i> Опубликовать ответ
                 </button>
                 <button type="button" class="btn" id="cancelAnswer" style="margin-left: 10px;">
@@ -602,22 +628,47 @@
                 <a href="#"><i class="fas fa-phone-alt"></i> 8-800-222-11-38</a>
                 <a href="#"><i class="fas fa-info-circle"></i> О платформе</a>
             </div>
-            <p class="copyright">© 2023 ЖК "Швейцария Парк". Платформа для общения жильцов.</p>
+            <p class="copyright">© 2023 ЖК "Швейцария Парк". Все данные хранятся в Firebase Cloud.</p>
         </div>
     </footer>
 
     <script>
-        // Хранилище данных
-        let questions = JSON.parse(localStorage.getItem('shveitsaria_questions')) || [];
-        let answers = JSON.parse(localStorage.getItem('shveitsaria_answers')) || [];
-        
-        // Сохранение данных в localStorage
-        function saveData() {
-            localStorage.setItem('shveitsaria_questions', JSON.stringify(questions));
-            localStorage.setItem('shveitsaria_answers', JSON.stringify(answers));
-            updateStats();
+        // Инициализация Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyD3zj_97Lk1q8gStvNVrefqr066s4d92Es",
+            authDomain: "sh-park.firebaseapp.com",
+            projectId: "sh-park",
+            storageBucket: "sh-park.firebasestorage.app",
+            messagingSenderId: "740490665190",
+            appId: "1:740490665190:web:e6a680594e56163556af27",
+            measurementId: "G-WJLN0JMGEK"
+        };
+
+        // Инициализация Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Коллекции Firestore
+        const questionsRef = db.collection("questions");
+        const answersRef = db.collection("answers");
+
+        // Глобальные переменные
+        let questions = [];
+        let answers = [];
+        let isInitialized = false;
+
+        // Форматирование даты
+        function formatDate(dateString) {
+            const date = dateString.toDate ? dateString.toDate() : new Date(dateString);
+            return date.toLocaleDateString('ru-RU', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
         }
-        
+
         // Обновление статистики
         function updateStats() {
             const questionsCount = questions.length;
@@ -630,7 +681,46 @@
             document.getElementById('answeredCount').textContent = answeredCount;
             document.getElementById('unansweredCount').textContent = unansweredCount;
         }
-        
+
+        // Загрузка всех данных из Firestore
+        async function loadAllData() {
+            try {
+                // Загружаем вопросы
+                const questionsSnapshot = await questionsRef.orderBy('createdAt', 'desc').get();
+                questions = questionsSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                // Загружаем ответы
+                const answersSnapshot = await answersRef.orderBy('createdAt', 'desc').get();
+                answers = answersSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+
+                // Обновляем статус вопросов
+                questions.forEach(question => {
+                    const questionAnswers = answers.filter(a => a.questionId === question.id);
+                    question.answerCount = questionAnswers.length;
+                    question.hasAnswer = questionAnswers.length > 0;
+                });
+
+                updateStats();
+                renderQuestions();
+                renderAnswers();
+                
+                // Обновляем список вопросов в модальном окне
+                updateQuestionSelect();
+                
+                return true;
+            } catch (error) {
+                console.error("Ошибка загрузки данных:", error);
+                showError("Не удалось загрузить данные. Проверьте подключение к интернету.");
+                return false;
+            }
+        }
+
         // Отображение вопросов
         function renderQuestions(filter = 'all') {
             const container = document.getElementById('questionsList');
@@ -645,9 +735,6 @@
                 filteredQuestions = questions.filter(q => q.category === filter);
             }
             
-            // Сортируем по дате (новые сверху)
-            filteredQuestions.sort((a, b) => new Date(b.date) - new Date(a.date));
-            
             if (filteredQuestions.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
@@ -658,32 +745,34 @@
                 return;
             }
             
+            const categoryIcons = {
+                general: 'fas fa-home',
+                repair: 'fas fa-tools',
+                parking: 'fas fa-car',
+                payments: 'fas fa-file-invoice-dollar',
+                rules: 'fas fa-clipboard-list',
+                other: 'fas fa-ellipsis-h'
+            };
+            
+            const categoryLabels = {
+                general: 'Общие',
+                repair: 'Ремонт',
+                parking: 'Паркинг',
+                payments: 'Платежи',
+                rules: 'Правила',
+                other: 'Другое'
+            };
+            
             container.innerHTML = filteredQuestions.map(question => {
-                const answerCount = answers.filter(a => a.questionId === question.id).length;
-                const categoryIcons = {
-                    general: 'fas fa-home',
-                    repair: 'fas fa-tools',
-                    parking: 'fas fa-car',
-                    payments: 'fas fa-file-invoice-dollar',
-                    rules: 'fas fa-clipboard-list',
-                    other: 'fas fa-ellipsis-h'
-                };
-                
-                const categoryLabels = {
-                    general: 'Общие',
-                    repair: 'Ремонт',
-                    parking: 'Паркинг',
-                    payments: 'Платежи',
-                    rules: 'Правила',
-                    other: 'Другое'
-                };
-                
                 return `
                     <div class="item-card question-card" data-id="${question.id}">
                         <div class="item-header">
                             <div>
                                 <strong><i class="${categoryIcons[question.category]}"></i> ${categoryLabels[question.category]}</strong>
-                                ${question.hasAnswer ? '<span style="color: #27ae60; margin-left: 10px;"><i class="fas fa-check-circle"></i> Есть ответ</span>' : '<span style="color: #e74c3c; margin-left: 10px;"><i class="fas fa-clock"></i> Ожидает ответа</span>'}
+                                ${question.hasAnswer ? 
+                                    '<span style="color: #27ae60; margin-left: 10px;"><i class="fas fa-check-circle"></i> Есть ответ</span>' : 
+                                    '<span style="color: #e74c3c; margin-left: 10px;"><i class="fas fa-clock"></i> Ожидает ответа</span>'
+                                }
                             </div>
                             <div class="item-actions">
                                 <button class="btn btn-edit answer-question-btn" data-id="${question.id}">
@@ -695,10 +784,12 @@
                         <div class="item-meta">
                             <div>
                                 <span class="item-author"><i class="fas fa-user"></i> ${question.author}</span>
-                                <span class="item-date" style="margin-left: 15px;"><i class="far fa-calendar"></i> ${formatDate(question.date)}</span>
+                                <span class="item-date" style="margin-left: 15px;">
+                                    <i class="far fa-calendar"></i> ${formatDate(question.createdAt)}
+                                </span>
                             </div>
                             <div>
-                                <span><i class="fas fa-comment"></i> ${answerCount} ответов</span>
+                                <span><i class="fas fa-comment"></i> ${question.answerCount || 0} ответов</span>
                             </div>
                         </div>
                     </div>
@@ -708,12 +799,12 @@
             // Добавляем обработчики для кнопок "Ответить"
             document.querySelectorAll('.answer-question-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
-                    const questionId = parseInt(this.getAttribute('data-id'));
+                    const questionId = this.getAttribute('data-id');
                     openAnswerModal(questionId);
                 });
             });
         }
-        
+
         // Отображение ответов
         function renderAnswers() {
             const container = document.getElementById('answersList');
@@ -728,22 +819,20 @@
                 return;
             }
             
-            // Сортируем ответы по дате (новые сверху)
-            const sortedAnswers = [...answers].sort((a, b) => new Date(b.date) - new Date(a.date));
+            const roleIcons = {
+                resident: 'fas fa-user',
+                management: 'fas fa-user-tie',
+                expert: 'fas fa-user-graduate'
+            };
             
-            container.innerHTML = sortedAnswers.map(answer => {
+            const roleLabels = {
+                resident: 'Жилец',
+                management: 'Представитель УК',
+                expert: 'Специалист'
+            };
+            
+            container.innerHTML = answers.map(answer => {
                 const question = questions.find(q => q.id === answer.questionId);
-                const roleIcons = {
-                    resident: 'fas fa-user',
-                    management: 'fas fa-user-tie',
-                    expert: 'fas fa-user-graduate'
-                };
-                
-                const roleLabels = {
-                    resident: 'Жилец',
-                    management: 'Представитель УК',
-                    expert: 'Специалист'
-                };
                 
                 return `
                     <div class="item-card answer-card" data-id="${answer.id}">
@@ -769,7 +858,9 @@
                         <div class="item-meta">
                             <div>
                                 <span class="item-author"><i class="fas fa-user"></i> ${answer.author}</span>
-                                <span class="item-date" style="margin-left: 15px;"><i class="far fa-calendar"></i> ${formatDate(answer.date)}</span>
+                                <span class="item-date" style="margin-left: 15px;">
+                                    <i class="far fa-calendar"></i> ${formatDate(answer.createdAt)}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -779,40 +870,37 @@
             // Добавляем обработчики для кнопок редактирования и удаления
             document.querySelectorAll('.edit-answer-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
-                    const answerId = parseInt(this.getAttribute('data-id'));
+                    const answerId = this.getAttribute('data-id');
                     editAnswer(answerId);
                 });
             });
             
             document.querySelectorAll('.delete-answer-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
-                    const answerId = parseInt(this.getAttribute('data-id'));
+                    const answerId = this.getAttribute('data-id');
                     deleteAnswer(answerId);
                 });
             });
         }
-        
-        // Форматирование даты
-        function formatDate(dateString) {
-            const date = new Date(dateString);
-            return date.toLocaleDateString('ru-RU', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-            });
+
+        // Обновление списка вопросов в выпадающем меню
+        function updateQuestionSelect() {
+            const select = document.getElementById('selectedQuestion');
+            select.innerHTML = questions.map(q => 
+                `<option value="${q.id}">${q.text.length > 80 ? q.text.substring(0, 80) + '...' : q.text}</option>`
+            ).join('');
+            
+            if (questions.length === 0) {
+                select.innerHTML = '<option value="">Нет доступных вопросов</option>';
+            }
         }
-        
+
         // Открытие модального окна для ответа
         function openAnswerModal(questionId = null) {
             const modal = document.getElementById('answerModal');
             const modalTitle = document.getElementById('modalTitle');
             const selectedQuestion = document.getElementById('selectedQuestion');
             const answerQuestionId = document.getElementById('answerQuestionId');
-            
-            // Заполняем выпадающий список вопросов
-            selectedQuestion.innerHTML = questions.map(q => {
-                return `<option value="${q.id}" ${questionId === q.id ? 'selected' : ''}>${q.text.length > 80 ? q.text.substring(0, 80) + '...' : q.text}</option>`;
-            }).join('');
             
             if (questionId) {
                 answerQuestionId.value = questionId;
@@ -828,9 +916,12 @@
             document.getElementById('answerAuthor').value = '';
             document.getElementById('answerRole').value = 'resident';
             
+            // Скрываем атрибут редактирования, если он есть
+            delete answerQuestionId.dataset.editId;
+            
             modal.classList.add('active');
         }
-        
+
         // Редактирование ответа
         function editAnswer(answerId) {
             const answer = answers.find(a => a.id === answerId);
@@ -838,18 +929,13 @@
             
             const modal = document.getElementById('answerModal');
             const modalTitle = document.getElementById('modalTitle');
-            const selectedQuestion = document.getElementById('selectedQuestion');
             const answerQuestionId = document.getElementById('answerQuestionId');
             
             modalTitle.textContent = 'Редактировать ответ';
             
-            // Заполняем выпадающий список вопросов
-            selectedQuestion.innerHTML = questions.map(q => {
-                return `<option value="${q.id}" ${answer.questionId === q.id ? 'selected' : ''}>${q.text.length > 80 ? q.text.substring(0, 80) + '...' : q.text}</option>`;
-            }).join('');
-            
             // Заполняем форму данными ответа
             answerQuestionId.value = answer.questionId;
+            document.getElementById('selectedQuestion').value = answer.questionId;
             document.getElementById('answerText').value = answer.text;
             document.getElementById('answerAuthor').value = answer.author;
             document.getElementById('answerRole').value = answer.role;
@@ -859,159 +945,341 @@
             
             modal.classList.add('active');
         }
-        
+
+        // Показать уведомление
+        function showMessage(message, type = 'success') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert ${type}`;
+            alertDiv.innerHTML = `
+                <div style="position: fixed; top: 100px; right: 20px; background: ${type === 'success' ? '#27ae60' : '#e74c3c'}; 
+                     color: white; padding: 15px 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                     z-index: 2000; display: flex; align-items: center; gap: 10px; max-width: 400px;">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 3000);
+        }
+
+        // Показать ошибку
+        function showError(message) {
+            showMessage(message, 'error');
+        }
+
         // Удаление ответа
-        function deleteAnswer(answerId) {
-            if (confirm('Вы уверены, что хотите удалить этот ответ?')) {
+        async function deleteAnswer(answerId) {
+            if (!confirm('Вы уверены, что хотите удалить этот ответ?')) return;
+            
+            try {
+                // Показываем индикатор загрузки
+                const submitBtn = document.getElementById('submitAnswerBtn');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Удаление...';
+                submitBtn.disabled = true;
+                
+                // Удаляем из Firestore
+                await answersRef.doc(answerId).delete();
+                
+                // Обновляем локальные данные
                 answers = answers.filter(a => a.id !== answerId);
                 
-                // Обновляем статус вопроса (если у него больше нет ответов)
-                const questionId = answers.find(a => a.id === answerId)?.questionId;
-                if (questionId) {
-                    const hasAnswers = answers.some(a => a.questionId === questionId);
-                    const question = questions.find(q => q.id === questionId);
+                // Обновляем статус вопроса
+                const deletedAnswer = answers.find(a => a.id === answerId);
+                if (deletedAnswer) {
+                    const questionAnswers = answers.filter(a => a.questionId === deletedAnswer.questionId);
+                    const question = questions.find(q => q.id === deletedAnswer.questionId);
                     if (question) {
-                        question.hasAnswer = hasAnswers;
+                        question.hasAnswer = questionAnswers.length > 0;
+                        question.answerCount = questionAnswers.length;
                     }
                 }
                 
-                saveData();
+                updateStats();
                 renderAnswers();
                 renderQuestions(document.getElementById('questionFilter').value);
+                
+                showMessage('Ответ успешно удален!');
+                
+            } catch (error) {
+                console.error("Ошибка удаления ответа:", error);
+                showError('Не удалось удалить ответ');
             }
         }
-        
-        // Генерация ID
-        function generateId(items) {
-            return items.length > 0 ? Math.max(...items.map(i => i.id)) + 1 : 1;
-        }
-        
+
         // Инициализация приложения
-        function initApp() {
-            updateStats();
-            renderQuestions();
-            renderAnswers();
-            
-            // Обработчик формы вопроса
-            document.getElementById('questionForm').addEventListener('submit', function(e) {
-                e.preventDefault();
+        async function initApp() {
+            try {
+                // Загружаем данные
+                await loadAllData();
+                isInitialized = true;
                 
-                const questionText = document.getElementById('questionText').value.trim();
-                const questionAuthor = document.getElementById('questionAuthor').value.trim() || 'Анонимный жилец';
-                const questionCategory = document.getElementById('questionCategory').value;
-                
-                if (!questionText) {
-                    alert('Пожалуйста, введите текст вопроса');
-                    return;
-                }
-                
-                const newQuestion = {
-                    id: generateId(questions),
-                    text: questionText,
-                    author: questionAuthor,
-                    category: questionCategory,
-                    date: new Date().toISOString().split('T')[0],
-                    hasAnswer: false
-                };
-                
-                questions.push(newQuestion);
-                saveData();
-                renderQuestions(document.getElementById('questionFilter').value);
-                
-                // Очищаем форму
-                this.reset();
-                document.getElementById('questionAuthor').value = '';
-                
-                alert('Вопрос успешно добавлен!');
-            });
-            
-            // Обработчик формы ответа
-            document.getElementById('answerForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                const answerText = document.getElementById('answerText').value.trim();
-                const answerAuthor = document.getElementById('answerAuthor').value.trim() || 'Анонимный жилец';
-                const answerRole = document.getElementById('answerRole').value;
-                const questionId = parseInt(document.getElementById('selectedQuestion').value);
-                const editId = document.getElementById('answerQuestionId').dataset.editId;
-                
-                if (!answerText) {
-                    alert('Пожалуйста, введите текст ответа');
-                    return;
-                }
-                
-                if (editId) {
-                    // Редактирование существующего ответа
-                    const answerIndex = answers.findIndex(a => a.id === parseInt(editId));
-                    if (answerIndex !== -1) {
-                        answers[answerIndex].text = answerText;
-                        answers[answerIndex].author = answerAuthor;
-                        answers[answerIndex].role = answerRole;
-                        answers[answerIndex].questionId = questionId;
-                        answers[answerIndex].date = new Date().toISOString().split('T')[0];
+                // Обработчик формы вопроса
+                document.getElementById('questionForm').addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const questionText = document.getElementById('questionText').value.trim();
+                    const questionAuthor = document.getElementById('questionAuthor').value.trim() || 'Анонимный жилец';
+                    const questionCategory = document.getElementById('questionCategory').value;
+                    
+                    if (!questionText) {
+                        showError('Пожалуйста, введите текст вопроса');
+                        return;
                     }
                     
-                    // Удаляем временный атрибут
-                    delete document.getElementById('answerQuestionId').dataset.editId;
-                } else {
-                    // Добавление нового ответа
-                    const newAnswer = {
-                        id: generateId(answers),
-                        questionId: questionId,
-                        text: answerText,
-                        author: answerAuthor,
-                        role: answerRole,
-                        date: new Date().toISOString().split('T')[0]
-                    };
+                    // Показываем индикатор загрузки
+                    const submitBtn = document.getElementById('submitQuestionBtn');
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Отправка...';
+                    submitBtn.disabled = true;
                     
-                    answers.push(newAnswer);
-                    
-                    // Обновляем статус вопроса
-                    const question = questions.find(q => q.id === questionId);
-                    if (question) {
-                        question.hasAnswer = true;
+                    try {
+                        // Добавляем вопрос в Firestore
+                        const newQuestionRef = await questionsRef.add({
+                            text: questionText,
+                            author: questionAuthor,
+                            category: questionCategory,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            hasAnswer: false,
+                            answerCount: 0
+                        });
+                        
+                        // Добавляем вопрос в локальный массив
+                        const newQuestion = {
+                            id: newQuestionRef.id,
+                            text: questionText,
+                            author: questionAuthor,
+                            category: questionCategory,
+                            createdAt: new Date(),
+                            hasAnswer: false,
+                            answerCount: 0
+                        };
+                        
+                        questions.unshift(newQuestion); // Добавляем в начало
+                        
+                        // Обновляем интерфейс
+                        updateStats();
+                        renderQuestions(document.getElementById('questionFilter').value);
+                        updateQuestionSelect();
+                        
+                        // Очищаем форму
+                        this.reset();
+                        document.getElementById('questionAuthor').value = '';
+                        
+                        showMessage('Вопрос успешно добавлен!');
+                        
+                    } catch (error) {
+                        console.error("Ошибка добавления вопроса:", error);
+                        showError('Не удалось добавить вопрос');
+                    } finally {
+                        // Восстанавливаем кнопку
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
                     }
-                }
+                });
                 
-                saveData();
-                renderAnswers();
-                renderQuestions(document.getElementById('questionFilter').value);
+                // Обработчик формы ответа
+                document.getElementById('answerForm').addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const answerText = document.getElementById('answerText').value.trim();
+                    const answerAuthor = document.getElementById('answerAuthor').value.trim() || 'Анонимный жилец';
+                    const answerRole = document.getElementById('answerRole').value;
+                    const questionId = document.getElementById('selectedQuestion').value;
+                    const editId = document.getElementById('answerQuestionId').dataset.editId;
+                    
+                    if (!answerText) {
+                        showError('Пожалуйста, введите текст ответа');
+                        return;
+                    }
+                    
+                    if (!questionId) {
+                        showError('Пожалуйста, выберите вопрос');
+                        return;
+                    }
+                    
+                    // Показываем индикатор загрузки
+                    const submitBtn = document.getElementById('submitAnswerBtn');
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Отправка...';
+                    submitBtn.disabled = true;
+                    
+                    try {
+                        if (editId) {
+                            // Редактирование существующего ответа
+                            await answersRef.doc(editId).update({
+                                text: answerText,
+                                author: answerAuthor,
+                                role: answerRole,
+                                questionId: questionId,
+                                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                            
+                            // Обновляем локальные данные
+                            const answerIndex = answers.findIndex(a => a.id === editId);
+                            if (answerIndex !== -1) {
+                                answers[answerIndex].text = answerText;
+                                answers[answerIndex].author = answerAuthor;
+                                answers[answerIndex].role = answerRole;
+                                answers[answerIndex].questionId = questionId;
+                            }
+                            
+                            showMessage('Ответ успешно обновлен!');
+                            
+                        } else {
+                            // Добавление нового ответа
+                            const newAnswerRef = await answersRef.add({
+                                text: answerText,
+                                author: answerAuthor,
+                                role: answerRole,
+                                questionId: questionId,
+                                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                            
+                            // Добавляем ответ в локальный массив
+                            const newAnswer = {
+                                id: newAnswerRef.id,
+                                text: answerText,
+                                author: answerAuthor,
+                                role: answerRole,
+                                questionId: questionId,
+                                createdAt: new Date()
+                            };
+                            
+                            answers.unshift(newAnswer); // Добавляем в начало
+                            
+                            // Обновляем статус вопроса
+                            const question = questions.find(q => q.id === questionId);
+                            if (question) {
+                                question.hasAnswer = true;
+                                question.answerCount = (question.answerCount || 0) + 1;
+                            }
+                            
+                            showMessage('Ответ успешно добавлен!');
+                        }
+                        
+                        // Обновляем интерфейс
+                        updateStats();
+                        renderAnswers();
+                        renderQuestions(document.getElementById('questionFilter').value);
+                        
+                        // Закрываем модальное окно и очищаем форму
+                        document.getElementById('answerModal').classList.remove('active');
+                        this.reset();
+                        document.getElementById('answerAuthor').value = '';
+                        
+                    } catch (error) {
+                        console.error("Ошибка сохранения ответа:", error);
+                        showError('Не удалось сохранить ответ');
+                    } finally {
+                        // Восстанавливаем кнопку
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                    }
+                });
                 
-                // Закрываем модальное окно и очищаем форму
-                document.getElementById('answerModal').classList.remove('active');
-                this.reset();
-                document.getElementById('answerAuthor').value = '';
+                // Кнопка "Ответить" в панели ответов
+                document.getElementById('addAnswerBtn').addEventListener('click', function() {
+                    openAnswerModal();
+                });
                 
-                alert(editId ? 'Ответ успешно обновлен!' : 'Ответ успешно добавлен!');
-            });
-            
-            // Кнопка "Ответить" в панели ответов
-            document.getElementById('addAnswerBtn').addEventListener('click', function() {
-                openAnswerModal();
-            });
-            
-            // Фильтр вопросов
-            document.getElementById('questionFilter').addEventListener('change', function() {
-                renderQuestions(this.value);
-            });
-            
-            // Закрытие модального окна
-            document.getElementById('closeModal').addEventListener('click', function() {
-                document.getElementById('answerModal').classList.remove('active');
-            });
-            
-            document.getElementById('cancelAnswer').addEventListener('click', function() {
-                document.getElementById('answerModal').classList.remove('active');
-            });
-            
-            // Закрытие модального окна по клику на фон
-            document.getElementById('answerModal').addEventListener('click', function(e) {
-                if (e.target === this) {
-                    this.classList.remove('active');
-                }
-            });
+                // Фильтр вопросов
+                document.getElementById('questionFilter').addEventListener('change', function() {
+                    renderQuestions(this.value);
+                });
+                
+                // Закрытие модального окна
+                document.getElementById('closeModal').addEventListener('click', function() {
+                    document.getElementById('answerModal').classList.remove('active');
+                });
+                
+                document.getElementById('cancelAnswer').addEventListener('click', function() {
+                    document.getElementById('answerModal').classList.remove('active');
+                });
+                
+                // Закрытие модального окна по клику на фон
+                document.getElementById('answerModal').addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        this.classList.remove('active');
+                    }
+                });
+                
+                // Режим реального времени - обновление при изменениях
+                questionsRef.onSnapshot((snapshot) => {
+                    if (!isInitialized) return;
+                    
+                    snapshot.docChanges().forEach((change) => {
+                        if (change.type === 'added' || change.type === 'modified') {
+                            const updatedQuestion = {
+                                id: change.doc.id,
+                                ...change.doc.data()
+                            };
+                            
+                            const index = questions.findIndex(q => q.id === updatedQuestion.id);
+                            if (index !== -1) {
+                                questions[index] = updatedQuestion;
+                            } else {
+                                questions.unshift(updatedQuestion);
+                            }
+                            
+                            updateStats();
+                            renderQuestions(document.getElementById('questionFilter').value);
+                            updateQuestionSelect();
+                        }
+                    });
+                });
+                
+                answersRef.onSnapshot((snapshot) => {
+                    if (!isInitialized) return;
+                    
+                    snapshot.docChanges().forEach((change) => {
+                        if (change.type === 'added' || change.type === 'modified') {
+                            const updatedAnswer = {
+                                id: change.doc.id,
+                                ...change.doc.data()
+                            };
+                            
+                            const index = answers.findIndex(a => a.id === updatedAnswer.id);
+                            if (index !== -1) {
+                                answers[index] = updatedAnswer;
+                            } else {
+                                answers.unshift(updatedAnswer);
+                            }
+                            
+                            // Обновляем статус вопросов
+                            questions.forEach(question => {
+                                const questionAnswers = answers.filter(a => a.questionId === question.id);
+                                question.answerCount = questionAnswers.length;
+                                question.hasAnswer = questionAnswers.length > 0;
+                            });
+                            
+                            updateStats();
+                            renderAnswers();
+                        } else if (change.type === 'removed') {
+                            answers = answers.filter(a => a.id !== change.doc.id);
+                            renderAnswers();
+                        }
+                    });
+                });
+                
+            } catch (error) {
+                console.error("Ошибка инициализации:", error);
+                document.getElementById('questionsList').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>Не удалось загрузить данные. Проверьте подключение к интернету.</p>
+                        <button onclick="location.reload()" class="btn btn-primary" style="margin-top: 1rem;">
+                            <i class="fas fa-redo"></i> Попробовать снова
+                        </button>
+                    </div>
+                `;
+            }
         }
-        
+
         // Запуск приложения при загрузке страницы
         document.addEventListener('DOMContentLoaded', initApp);
     </script>
