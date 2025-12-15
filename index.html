@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Швейцария Парк | Вопросы жильцов</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #27ae60;
+            --accent-color: #e74c3c;
+            --light-green: #e8f5e9;
+            --medium-green: #a5d6a7;
+            --dark-green: #388e3c;
+            --light-color: #f8fdf8;
+            --dark-color: #1b5e20;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light-color);
+            color: #333;
+            line-height: 1.6;
+            padding: 0;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--dark-green), var(--secondary-color));
+            color: white;
+            padding: 1.8rem 0;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .container {
+            width: 95%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem 0;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 0.5rem;
+        }
+        
+        .logo-icon {
+            font-size: 2rem;
+            color: white;
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.95;
+            max-width: 800px;
+            margin: 0 auto;
+            font-weight: 300;
+        }
+        
+        /* Основной контент - две колонки */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 1.5rem;
+        }
+        
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Панели вопросов и ответов */
+        .panel {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            overflow: hidden;
+            border: 1px solid var(--light-green);
+            height: fit-content;
+        }
+        
+        .panel-header {
+            background: linear-gradient(to right, var(--medium-green), var(--secondary-color));
+            color: white;
+            padding: 1.2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .panel-header h2 {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .panel-body {
+            padding: 1.5rem;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        /* Списки */
+        .items-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .item-card {
+            background: var(--light-green);
+            border-radius: 10px;
+            padding: 1.2rem;
+            border-left: 4px solid var(--secondary-color);
+            transition: all 0.3s ease;
+        }
+        
+        .item-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        }
+        
+        .question-card {
+            border-left-color: #3498db;
+        }
+        
+        .answer-card {
+            border-left-color: #9b59b6;
+        }
+        
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.8rem;
+        }
+        
+        .item-text {
+            font-size: 1rem;
+            line-height: 1.5;
+        }
+        
+        .item-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0.8rem;
+            font-size: 0.85rem;
+            color: #666;
+        }
+        
+        .item-date {
+            font-style: italic;
+        }
+        
+        .item-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        /* Формы */
+        .form-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 2px dashed var(--medium-green);
+        }
+        
+        .form-title {
+            color: var(--dark-green);
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.3rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+        
+        textarea, input[type="text"], select {
+            width: 100%;
+            padding: 0.9rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #f9f9f9;
+        }
+        
+        textarea:focus, input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.2);
+            background: white;
+        }
+        
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        /* Кнопки */
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--dark-green);
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .btn-edit {
+            background-color: #f39c12;
+            color: white;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+        }
+        
+        .btn-delete {
+            background-color: #e74c3c;
+            color: white;
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+        }
+        
+        .btn-small {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+        }
+        
+        /* Статистика */
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            background: white;
+            border-radius: 10px;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--secondary-color);
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        /* Модальное окно */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .modal-title {
+            color: var(--dark-green);
+            font-size: 1.5rem;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        /* Пустые состояния */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #888;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #ddd;
+        }
+        
+        footer {
+            background: linear-gradient(135deg, var(--dark-green), var(--secondary-color));
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+        
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: opacity 0.3s;
+        }
+        
+        .footer-links a:hover {
+            opacity: 0.8;
+        }
+        
+        .copyright {
+            margin-top: 1rem;
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+        
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .container {
+                width: 98%;
+                padding: 1rem 0;
+            }
+            
+            .main-content {
+                gap: 1.5rem;
+            }
+            
+            .panel-body {
+                padding: 1rem;
+                max-height: 500px;
+            }
+            
+            .form-container {
+                padding: 1rem;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-tree logo-icon"></i>
+                <h1>Швейцария Парк</h1>
+            </div>
+            <p class="subtitle">Платформа для вопросов и ответов жильцов</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Статистика -->
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-value" id="questionsCount">0</div>
+                <div class="stat-label">Вопросов</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="answersCount">0</div>
+                <div class="stat-label">Ответов</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="answeredCount">0</div>
+                <div class="stat-label">С ответами</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="unansweredCount">0</div>
+                <div class="stat-label">Без ответов</div>
+            </div>
+        </div>
+
+        <!-- Форма добавления вопроса -->
+        <div class="form-container">
+            <h3 class="form-title"><i class="fas fa-question-circle"></i> Задать новый вопрос</h3>
+            <form id="questionForm">
+                <div class="form-group">
+                    <label for="questionAuthor">Ваше имя (необязательно):</label>
+                    <input type="text" id="questionAuthor" placeholder="Анонимный жилец">
+                </div>
+                <div class="form-group">
+                    <label for="questionText">Ваш вопрос:</label>
+                    <textarea id="questionText" placeholder="Например: Когда будут включить отопление? Как получить ключ от подвала?" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="questionCategory">Категория:</label>
+                    <select id="questionCategory">
+                        <option value="general">Общие вопросы</option>
+                        <option value="repair">Ремонт и обслуживание</option>
+                        <option value="parking">Паркинг</option>
+                        <option value="payments">Платежи и квитанции</option>
+                        <option value="rules">Правила проживания</option>
+                        <option value="other">Другое</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i> Задать вопрос
+                </button>
+            </form>
+        </div>
+
+        <!-- Основной контент - две колонки -->
+        <div class="main-content">
+            <!-- Левая колонка - вопросы -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h2><i class="fas fa-question"></i> Вопросы жильцов</h2>
+                    <div class="filter-controls">
+                        <select id="questionFilter" class="btn-small">
+                            <option value="all">Все вопросы</option>
+                            <option value="unanswered">Без ответов</option>
+                            <option value="answered">С ответами</option>
+                            <option value="general">Общие</option>
+                            <option value="repair">Ремонт</option>
+                            <option value="parking">Паркинг</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="items-list" id="questionsList">
+                        <!-- Вопросы будут добавлены с помощью JavaScript -->
+                        <div class="empty-state">
+                            <i class="fas fa-question-circle"></i>
+                            <p>Пока нет вопросов. Будьте первым!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Правая колонка - ответы -->
+            <div class="panel">
+                <div class="panel-header">
+                    <h2><i class="fas fa-comments"></i> Ответы</h2>
+                    <button class="btn btn-secondary btn-small" id="addAnswerBtn">
+                        <i class="fas fa-reply"></i> Ответить
+                    </button>
+                </div>
+                <div class="panel-body">
+                    <div class="items-list" id="answersList">
+                        <!-- Ответы будут добавлены с помощью JavaScript -->
+                        <div class="empty-state">
+                            <i class="fas fa-comments"></i>
+                            <p>Ответов пока нет. Ответьте на любой вопрос!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно для ответа -->
+    <div class="modal" id="answerModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Ответить на вопрос</h3>
+                <button class="close-modal" id="closeModal">&times;</button>
+            </div>
+            <form id="answerForm">
+                <input type="hidden" id="answerQuestionId">
+                <div class="form-group">
+                    <label for="answerAuthor">Ваше имя (необязательно):</label>
+                    <input type="text" id="answerAuthor" placeholder="Анонимный жилец">
+                </div>
+                <div class="form-group">
+                    <label for="selectedQuestion">Вопрос:</label>
+                    <select id="selectedQuestion">
+                        <!-- Опции будут добавлены JavaScript -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="answerText">Ваш ответ:</label>
+                    <textarea id="answerText" placeholder="Напишите подробный ответ..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="answerRole">Вы отвечаете как:</label>
+                    <select id="answerRole">
+                        <option value="resident">Жилец</option>
+                        <option value="management">Представитель УК</option>
+                        <option value="expert">Специалист</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-reply"></i> Опубликовать ответ
+                </button>
+                <button type="button" class="btn" id="cancelAnswer" style="margin-left: 10px;">
+                    Отмена
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-tree logo-icon"></i>
+                <h2>Швейцария Парк</h2>
+            </div>
+            <div class="footer-links">
+                <a href="mailto:info@lqnn.ru"><i class="fas fa-envelope"></i> Управляющая компания</a>
+                <a href="#"><i class="fas fa-phone-alt"></i> 8-800-222-11-38</a>
+                <a href="#"><i class="fas fa-info-circle"></i> О платформе</a>
+            </div>
+            <p class="copyright">© 2023 ЖК "Швейцария Парк". Платформа для общения жильцов.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Хранилище данных (в реальном приложении здесь был бы backend)
+        let questions = JSON.parse(localStorage.getItem('shveitsaria_questions')) || [];
+        let answers = JSON.parse(localStorage.getItem('shveitsaria_answers')) || [];
+        
+  
+        
+        // Сохранение данных в localStorage
+        function saveData() {
+            localStorage.setItem('shveitsaria_questions', JSON.stringify(questions));
+            localStorage.setItem('shveitsaria_answers', JSON.stringify(answers));
+            updateStats();
+        }
+        
+        // Обновление статистики
+        function updateStats() {
+            const questionsCount = questions.length;
+            const answersCount = answers.length;
+            const answeredCount = questions.filter(q => q.hasAnswer).length;
+            const unansweredCount = questionsCount - answeredCount;
+            
+            document.getElementById('questionsCount').textContent = questionsCount;
+            document.getElementById('answersCount').textContent = answersCount;
+            document.getElementById('answeredCount').textContent = answeredCount;
+            document.getElementById('unansweredCount').textContent = unansweredCount;
+        }
+        
+        // Отображение вопросов
+        function renderQuestions(filter = 'all') {
+            const container = document.getElementById('questionsList');
+            let filteredQuestions = [...questions];
+            
+            // Применяем фильтр
+            if (filter === 'unanswered') {
+                filteredQuestions = questions.filter(q => !q.hasAnswer);
+            } else if (filter === 'answered') {
+                filteredQuestions = questions.filter(q => q.hasAnswer);
+            } else if (filter !== 'all') {
+                filteredQuestions = questions.filter(q => q.category === filter);
+            }
+            
+            // Сортируем по дате (новые сверху)
+            filteredQuestions.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            if (filteredQuestions.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-question-circle"></i>
+                        <p>Нет вопросов по выбранному фильтру</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = filteredQuestions.map(question => {
+                const answerCount = answers.filter(a => a.questionId === question.id).length;
+                const categoryIcons = {
+                    general: 'fas fa-home',
+                    repair: 'fas fa-tools',
+                    parking: 'fas fa-car',
+                    payments: 'fas fa-file-invoice-dollar',
+                    rules: 'fas fa-clipboard-list',
+                    other: 'fas fa-ellipsis-h'
+                };
+                
+                const categoryLabels = {
+                    general: 'Общие',
+                    repair: 'Ремонт',
+                    parking: 'Паркинг',
+                    payments: 'Платежи',
+                    rules: 'Правила',
+                    other: 'Другое'
+                };
+                
+                return `
+                    <div class="item-card question-card" data-id="${question.id}">
+                        <div class="item-header">
+                            <div>
+                                <strong><i class="${categoryIcons[question.category]}"></i> ${categoryLabels[question.category]}</strong>
+                                ${question.hasAnswer ? '<span style="color: #27ae60; margin-left: 10px;"><i class="fas fa-check-circle"></i> Есть ответ</span>' : '<span style="color: #e74c3c; margin-left: 10px;"><i class="fas fa-clock"></i> Ожидает ответа</span>'}
+                            </div>
+                            <div class="item-actions">
+                                <button class="btn btn-edit answer-question-btn" data-id="${question.id}">
+                                    <i class="fas fa-reply"></i> Ответить
+                                </button>
+                            </div>
+                        </div>
+                        <div class="item-text">${question.text}</div>
+                        <div class="item-meta">
+                            <div>
+                                <span class="item-author"><i class="fas fa-user"></i> ${question.author}</span>
+                                <span class="item-date" style="margin-left: 15px;"><i class="far fa-calendar"></i> ${formatDate(question.date)}</span>
+                            </div>
+                            <div>
+                                <span><i class="fas fa-comment"></i> ${answerCount} ответов</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Добавляем обработчики для кнопок "Ответить"
+            document.querySelectorAll('.answer-question-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const questionId = parseInt(this.getAttribute('data-id'));
+                    openAnswerModal(questionId);
+                });
+            });
+        }
+        
+        // Отображение ответов
+        function renderAnswers() {
+            const container = document.getElementById('answersList');
+            
+            if (answers.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-comments"></i>
+                        <p>Ответов пока нет. Ответьте на любой вопрос!</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Сортируем ответы по дате (новые сверху)
+            const sortedAnswers = [...answers].sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            container.innerHTML = sortedAnswers.map(answer => {
+                const question = questions.find(q => q.id === answer.questionId);
+                const roleIcons = {
+                    resident: 'fas fa-user',
+                    management: 'fas fa-user-tie',
+                    expert: 'fas fa-user-graduate'
+                };
+                
+                const roleLabels = {
+                    resident: 'Жилец',
+                    management: 'Представитель УК',
+                    expert: 'Специалист'
+                };
+                
+                return `
+                    <div class="item-card answer-card" data-id="${answer.id}">
+                        <div class="item-header">
+                            <div>
+                                <strong><i class="${roleIcons[answer.role]}"></i> ${roleLabels[answer.role]}</strong>
+                            </div>
+                            <div class="item-actions">
+                                <button class="btn btn-edit edit-answer-btn" data-id="${answer.id}">
+                                    <i class="fas fa-edit"></i> Изменить
+                                </button>
+                                <button class="btn btn-delete delete-answer-btn" data-id="${answer.id}">
+                                    <i class="fas fa-trash"></i> Удалить
+                                </button>
+                            </div>
+                        </div>
+                        <div class="item-text">
+                            <strong>Вопрос:</strong> ${question ? question.text : 'Вопрос удален'}
+                        </div>
+                        <div class="item-text" style="margin-top: 10px;">
+                            <strong>Ответ:</strong> ${answer.text}
+                        </div>
+                        <div class="item-meta">
+                            <div>
+                                <span class="item-author"><i class="fas fa-user"></i> ${answer.author}</span>
+                                <span class="item-date" style="margin-left: 15px;"><i class="far fa-calendar"></i> ${formatDate(answer.date)}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Добавляем обработчики для кнопок редактирования и удаления
+            document.querySelectorAll('.edit-answer-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const answerId = parseInt(this.getAttribute('data-id'));
+                    editAnswer(answerId);
+                });
+            });
+            
+            document.querySelectorAll('.delete-answer-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const answerId = parseInt(this.getAttribute('data-id'));
+                    deleteAnswer(answerId);
+                });
+            });
+        }
+        
+        // Форматирование даты
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('ru-RU', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        }
+        
+        // Открытие модального окна для ответа
+        function openAnswerModal(questionId = null) {
+            const modal = document.getElementById('answerModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const selectedQuestion = document.getElementById('selectedQuestion');
+            const answerQuestionId = document.getElementById('answerQuestionId');
+            
+            // Заполняем выпадающий список вопросов
+            selectedQuestion.innerHTML = questions.map(q => {
+                return `<option value="${q.id}" ${questionId === q.id ? 'selected' : ''}>${q.text.length > 80 ? q.text.substring(0, 80) + '...' : q.text}</option>`;
+            }).join('');
+            
+            if (questionId) {
+                answerQuestionId.value = questionId;
+                selectedQuestion.value = questionId;
+                modalTitle.textContent = 'Ответить на вопрос';
+            } else {
+                answerQuestionId.value = '';
+                modalTitle.textContent = 'Добавить ответ';
+            }
+            
+            // Очищаем форму
+            document.getElementById('answerText').value = '';
+            document.getElementById('answerAuthor').value = '';
+            document.getElementById('answerRole').value = 'resident';
+            
+            modal.classList.add('active');
+        }
+        
+        // Редактирование ответа
+        function editAnswer(answerId) {
+            const answer = answers.find(a => a.id === answerId);
+            if (!answer) return;
+            
+            const modal = document.getElementById('answerModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const selectedQuestion = document.getElementById('selectedQuestion');
+            const answerQuestionId = document.getElementById('answerQuestionId');
+            
+            modalTitle.textContent = 'Редактировать ответ';
+            
+            // Заполняем выпадающий список вопросов
+            selectedQuestion.innerHTML = questions.map(q => {
+                return `<option value="${q.id}" ${answer.questionId === q.id ? 'selected' : ''}>${q.text.length > 80 ? q.text.substring(0, 80) + '...' : q.text}</option>`;
+            }).join('');
+            
+            // Заполняем форму данными ответа
+            answerQuestionId.value = answer.questionId;
+            document.getElementById('answerText').value = answer.text;
+            document.getElementById('answerAuthor').value = answer.author;
+            document.getElementById('answerRole').value = answer.role;
+            
+            // Сохраняем ID редактируемого ответа
+            answerQuestionId.dataset.editId = answerId;
+            
+            modal.classList.add('active');
+        }
+        
+        // Удаление ответа
+        function deleteAnswer(answerId) {
+            if (confirm('Вы уверены, что хотите удалить этот ответ?')) {
+                answers = answers.filter(a => a.id !== answerId);
+                
+                // Обновляем статус вопроса (если у него больше нет ответов)
+                const questionId = answers.find(a => a.id === answerId)?.questionId;
+                if (questionId) {
+                    const hasAnswers = answers.some(a => a.questionId === questionId);
+                    const question = questions.find(q => q.id === questionId);
+                    if (question) {
+                        question.hasAnswer = hasAnswers;
+                    }
+                }
+                
+                saveData();
+                renderAnswers();
+                renderQuestions(document.getElementById('questionFilter').value);
+            }
+        }
+        
+        // Генерация ID
+        function generateId(items) {
+            return items.length > 0 ? Math.max(...items.map(i => i.id)) + 1 : 1;
+        }
+        
+        // Инициализация приложения
+        function initApp() {
+            initDemoData();
+            updateStats();
+            renderQuestions();
+            renderAnswers();
+            
+            // Обработчик формы вопроса
+            document.getElementById('questionForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const questionText = document.getElementById('questionText').value.trim();
+                const questionAuthor = document.getElementById('questionAuthor').value.trim() || 'Анонимный жилец';
+                const questionCategory = document.getElementById('questionCategory').value;
+                
+                if (!questionText) {
+                    alert('Пожалуйста, введите текст вопроса');
+                    return;
+                }
+                
+                const newQuestion = {
+                    id: generateId(questions),
+                    text: questionText,
+                    author: questionAuthor,
+                    category: questionCategory,
+                    date: new Date().toISOString().split('T')[0],
+                    hasAnswer: false
+                };
+                
+                questions.push(newQuestion);
+                saveData();
+                renderQuestions(document.getElementById('questionFilter').value);
+                
+                // Очищаем форму
+                this.reset();
+                document.getElementById('questionAuthor').value = '';
+                
+                alert('Вопрос успешно добавлен!');
+            });
+            
+            // Обработчик формы ответа
+            document.getElementById('answerForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const answerText = document.getElementById('answerText').value.trim();
+                const answerAuthor = document.getElementById('answerAuthor').value.trim() || 'Анонимный жилец';
+                const answerRole = document.getElementById('answerRole').value;
+                const questionId = parseInt(document.getElementById('selectedQuestion').value);
+                const editId = document.getElementById('answerQuestionId').dataset.editId;
+                
+                if (!answerText) {
+                    alert('Пожалуйста, введите текст ответа');
+                    return;
+                }
+                
+                if (editId) {
+                    // Редактирование существующего ответа
+                    const answerIndex = answers.findIndex(a => a.id === parseInt(editId));
+                    if (answerIndex !== -1) {
+                        answers[answerIndex].text = answerText;
+                        answers[answerIndex].author = answerAuthor;
+                        answers[answerIndex].role = answerRole;
+                        answers[answerIndex].questionId = questionId;
+                        answers[answerIndex].date = new Date().toISOString().split('T')[0];
+                    }
+                    
+                    // Удаляем временный атрибут
+                    delete document.getElementById('answerQuestionId').dataset.editId;
+                } else {
+                    // Добавление нового ответа
+                    const newAnswer = {
+                        id: generateId(answers),
+                        questionId: questionId,
+                        text: answerText,
+                        author: answerAuthor,
+                        role: answerRole,
+                        date: new Date().toISOString().split('T')[0]
+                    };
+                    
+                    answers.push(newAnswer);
+                    
+                    // Обновляем статус вопроса
+                    const question = questions.find(q => q.id === questionId);
+                    if (question) {
+                        question.hasAnswer = true;
+                    }
+                }
+                
+                saveData();
+                renderAnswers();
+                renderQuestions(document.getElementById('questionFilter').value);
+                
+                // Закрываем модальное окно и очищаем форму
+                document.getElementById('answerModal').classList.remove('active');
+                this.reset();
+                document.getElementById('answerAuthor').value = '';
+                
+                alert(editId ? 'Ответ успешно обновлен!' : 'Ответ успешно добавлен!');
+            });
+            
+            // Кнопка "Ответить" в панели ответов
+            document.getElementById('addAnswerBtn').addEventListener('click', function() {
+                openAnswerModal();
+            });
+            
+            // Фильтр вопросов
+            document.getElementById('questionFilter').addEventListener('change', function() {
+                renderQuestions(this.value);
+            });
+            
+            // Закрытие модального окна
+            document.getElementById('closeModal').addEventListener('click', function() {
+                document.getElementById('answerModal').classList.remove('active');
+            });
+            
+            document.getElementById('cancelAnswer').addEventListener('click', function() {
+                document.getElementById('answerModal').classList.remove('active');
+            });
+            
+            // Закрытие модального окна по клику на фон
+            document.getElementById('answerModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                }
+            });
+        }
+        
+        // Запуск приложения при загрузке страницы
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
